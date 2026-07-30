@@ -1,0 +1,15 @@
+{
+	"name": "df-adventure",
+	"properties": {
+		"trustModeClaimForMi": {
+			"value": "Disabled",
+			"editable": true
+		}
+	},
+	"location": "centralindia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "7f8fef1b-0d9f-44f5-a1d6-33ebb259fc9c",
+		"tenantId": "4a9ce05c-2866-4d37-81bd-02ea4bb624ab"
+	}
+}
