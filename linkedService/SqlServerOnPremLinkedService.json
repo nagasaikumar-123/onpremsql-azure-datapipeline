@@ -6,7 +6,7 @@
 		"typeProperties": {
 			"server": "DESKTOP-3KRONJH",
 			"database": "AdventureWorksLT2025",
-			"encrypt": "mandatory",
+			"encrypt": "optional",
 			"trustServerCertificate": false,
 			"authenticationType": "SQL",
 			"userName": "saikumar",
