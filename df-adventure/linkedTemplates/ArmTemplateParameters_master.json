@@ -1,0 +1,33 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "df-adventure"
+		},
+		"AzureDataLakeStorageLinkedService_accountKey": {
+			"value": ""
+		},
+		"AzureKeyVault1_properties_typeProperties_baseUrl": {
+			"value": "https://keyvault-adventure.vault.azure.net/"
+		},
+		"SqlServerOnPremLinkedService_properties_typeProperties_server": {
+			"value": "DESKTOP-3KRONJH"
+		},
+		"SqlServerOnPremLinkedService_properties_typeProperties_database": {
+			"value": "AdventureWorksLT2025"
+		},
+		"SqlServerOnPremLinkedService_properties_typeProperties_userName": {
+			"value": "saikumar"
+		},
+		"AzureDataLakeStorageLinkedService_properties_typeProperties_url": {
+			"value": "https://dlsadventure.dfs.core.windows.net/"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}
