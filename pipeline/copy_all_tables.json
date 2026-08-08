@@ -24,7 +24,8 @@
 					"dataset": {
 						"referenceName": "SqlServerOnPrem",
 						"type": "DatasetReference"
-					}
+					},
+					"firstRowOnly": false
 				}
 			}
 		],
