@@ -19,6 +19,7 @@
 						"type": "SqlServerSource",
 						"sqlReaderQuery": "select\ns.name as schemaname,\nt.name as tablename\nfrom sys.tables t\ninner join sys.schemas s\non t.schema_id=s.schema_id\nwhere s.name='SalesLT'",
 						"queryTimeout": "02:00:00",
+						"isolationLevel": "ReadCommitted",
 						"partitionOption": "None"
 					},
 					"dataset": {
