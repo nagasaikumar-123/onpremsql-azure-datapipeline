@@ -8,6 +8,9 @@
 		"AzureDataLakeStorageLinkedService_accountKey": {
 			"value": ""
 		},
+		"AzureDataLakeStorageLinkedService_properties_typeProperties_url": {
+			"value": "https://dlsadventure.dfs.core.windows.net/"
+		},
 		"AzureKeyVault1_properties_typeProperties_baseUrl": {
 			"value": "https://keyvault-adventure.vault.azure.net/"
 		},
@@ -19,9 +22,6 @@
 		},
 		"SqlServerOnPremLinkedService_properties_typeProperties_userName": {
 			"value": "saikumar"
-		},
-		"AzureDataLakeStorageLinkedService_properties_typeProperties_url": {
-			"value": "https://dlsadventure.dfs.core.windows.net/"
 		},
 		"containerUri": {
 			"value": ""

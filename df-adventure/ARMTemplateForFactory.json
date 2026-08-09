@@ -11,6 +11,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorageLinkedService'"
 		},
+		"AzureDataLakeStorageLinkedService_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://dlsadventure.dfs.core.windows.net/"
+		},
 		"AzureKeyVault1_properties_typeProperties_baseUrl": {
 			"type": "string",
 			"defaultValue": "https://keyvault-adventure.vault.azure.net/"
@@ -26,10 +30,6 @@
 		"SqlServerOnPremLinkedService_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "saikumar"
-		},
-		"AzureDataLakeStorageLinkedService_properties_typeProperties_url": {
-			"type": "string",
-			"defaultValue": "https://dlsadventure.dfs.core.windows.net/"
 		}
 	},
 	"variables": {
@@ -37,14 +37,14 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('factoryName'), '/copy_data')]",
+			"name": "[concat(parameters('factoryName'), '/copy_all_tables')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"activities": [
 					{
-						"name": "Copy data",
-						"type": "Copy",
+						"name": "Lookup",
+						"type": "Lookup",
 						"dependsOn": [],
 						"policy": {
 							"timeout": "0.12:00:00",
@@ -57,42 +57,18 @@
 						"typeProperties": {
 							"source": {
 								"type": "SqlServerSource",
+								"sqlReaderQuery": "select\ns.name as schemaname,\nt.name as tablename\nfrom sys.tables t\ninner join sys.schemas s\non t.schema_id=s.schema_id\nwhere s.name='SalesLT'",
 								"queryTimeout": "02:00:00",
+								"isolationLevel": "ReadCommitted",
 								"partitionOption": "None"
 							},
-							"sink": {
-								"type": "ParquetSink",
-								"storeSettings": {
-									"type": "AzureBlobFSWriteSettings"
-								},
-								"formatSettings": {
-									"type": "ParquetWriteSettings"
-								}
-							},
-							"enableStaging": false,
-							"translator": {
-								"type": "TabularTranslator",
-								"typeConversion": true,
-								"typeConversionSettings": {
-									"allowDataTruncation": true,
-									"treatBooleanAsNumber": false
-								}
-							}
-						},
-						"inputs": [
-							{
+							"dataset": {
 								"referenceName": "SqlServerOnPrem",
 								"type": "DatasetReference",
 								"parameters": {}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ParquetSink",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						]
+							},
+							"firstRowOnly": false
+						}
 					}
 				],
 				"policy": {
@@ -101,17 +77,65 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/SqlServerOnPrem')]",
-				"[concat(variables('factoryId'), '/datasets/ParquetSink')]"
+				"[concat(variables('factoryId'), '/datasets/SqlServerOnPrem')]"
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/SelfHosterIR')]",
-			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"name": "[concat(parameters('factoryName'), '/ParquetSink')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"type": "SelfHosted",
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorageLinkedService",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileSystem": "bronze"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorageLinkedService')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SqlServerOnPrem')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "SqlServerOnPremLinkedService",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [],
 				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/SqlServerOnPremLinkedService')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureDataLakeStorageLinkedService')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('AzureDataLakeStorageLinkedService_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('AzureDataLakeStorageLinkedService_accountKey')]"
+					}
+				}
 			},
 			"dependsOn": []
 		},
@@ -162,106 +186,14 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/SqlServerOnPrem')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
+			"name": "[concat(parameters('factoryName'), '/SelfHosterIR')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"linkedServiceName": {
-					"referenceName": "SqlServerOnPremLinkedService",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "SqlServerTable",
-				"schema": [
-					{
-						"name": "AddressID",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "AddressLine1",
-						"type": "nvarchar"
-					},
-					{
-						"name": "AddressLine2",
-						"type": "nvarchar"
-					},
-					{
-						"name": "City",
-						"type": "nvarchar"
-					},
-					{
-						"name": "StateProvince",
-						"type": "nvarchar"
-					},
-					{
-						"name": "CountryRegion",
-						"type": "nvarchar"
-					},
-					{
-						"name": "PostalCode",
-						"type": "nvarchar"
-					},
-					{
-						"name": "rowguid",
-						"type": "uniqueidentifier"
-					},
-					{
-						"name": "ModifiedDate",
-						"type": "datetime",
-						"precision": 23,
-						"scale": 3
-					}
-				],
-				"typeProperties": {
-					"schema": "SalesLT",
-					"table": "Address"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/SqlServerOnPremLinkedService')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/AzureDataLakeStorageLinkedService')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureBlobFS",
-				"typeProperties": {
-					"url": "[parameters('AzureDataLakeStorageLinkedService_properties_typeProperties_url')]",
-					"accountKey": {
-						"type": "SecureString",
-						"value": "[parameters('AzureDataLakeStorageLinkedService_accountKey')]"
-					}
-				}
+				"type": "SelfHosted",
+				"typeProperties": {}
 			},
 			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ParquetSink')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureDataLakeStorageLinkedService",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "Parquet",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileSystem": "bronze"
-					},
-					"compressionCodec": "snappy"
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorageLinkedService')]"
-			]
 		}
 	]
 }
