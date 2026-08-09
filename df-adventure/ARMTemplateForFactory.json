@@ -142,11 +142,11 @@
 											"type": "DatasetReference",
 											"parameters": {
 												"schemaname": {
-													"value": "item().schemaname",
+													"value": "@item().schemaname",
 													"type": "Expression"
 												},
 												"tablename": {
-													"value": "item().tablename",
+													"value": "@item().tablename",
 													"type": "Expression"
 												}
 											}
